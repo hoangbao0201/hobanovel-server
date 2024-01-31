@@ -6,6 +6,9 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { NovelModule } from './novel/novel.module';
+import { CrawlModule } from './crawl/crawl.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ChapterModule } from './chapter/chapter.module';
 
 @Module({
   imports: [
@@ -15,7 +18,10 @@ import { NovelModule } from './novel/novel.module';
     AuthModule,
     PrismaModule,
     UserModule,
-    NovelModule
+    NovelModule,
+    CrawlModule,
+    CloudinaryModule,
+    ChapterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

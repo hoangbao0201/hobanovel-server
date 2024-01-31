@@ -1,34 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { NovelService } from './novel.service';
-import { CreateNovelDto } from './dto/create-novel.dto';
-import { UpdateNovelDto } from './dto/update-novel.dto';
 
 @Controller('/api/novels')
 export class NovelController {
   constructor(private readonly novelService: NovelService) {}
 
-  @Post()
-  create(@Body() createNovelDto: CreateNovelDto) {
-    return this.novelService.create(createNovelDto);
-  }
-
   @Get()
-  findAll() {
-    return this.novelService.findAll();
+  findAll(
+    @Query('q') q: string,
+    @Query('byu') byu: string,
+    @Query('take') take: number,
+    @Query('skip') skip: number,
+    @Query('sort') sort: 'desc' | 'asc',
+  ) {
+    return this.novelService.findAll({ q, byu, take: take, skip: skip, sort });
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.novelService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNovelDto: UpdateNovelDto) {
-    return this.novelService.update(+id, updateNovelDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.novelService.remove(+id);
-  }
 }

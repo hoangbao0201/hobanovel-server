@@ -36,8 +36,10 @@ model User {
 
 model Novel {
   novelId     String   @id @default(auto()) @map("_id") @db.ObjectId
+  thumbnail   String?
   title       String
   description String
+  scrapedUrl  String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -54,5 +56,5 @@ model Chapter {
   updatedAt DateTime @updatedAt
 
   novelId String @db.ObjectId
-  novel   Novel? @relation(fields: [novelId], references: [novelId], onDelete: Cascade)
+  novel   Novel  @relation(fields: [novelId], references: [novelId], onDelete: Cascade)
 }

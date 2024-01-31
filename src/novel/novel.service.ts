@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { CreateNovelDto } from './dto/create-novel.dto';
 import { UpdateNovelDto } from './dto/update-novel.dto';
 
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+
+
 
 
 @Injectable()
@@ -13,15 +17,9 @@ export class NovelService {
 
   async findAll() {
 
-    
-    const browser = await puppeteer.launch({ headless: 'new' });
-    const page = await browser.newPage();
-    
-    await page.goto('https://www.indeed.com');
-
-    const title = await page.title();
-
-    await browser.close();
+    const response = await axios.get("https://metruyencv.com/");
+    const $ = cheerio.load(response.data);
+    const title = $('title').text();
     
     return {
       success: true,

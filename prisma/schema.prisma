@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  roleId   String @id @default(auto()) @map("_id") @db.ObjectId
+  roleName String @unique
+  users    User[]
+}
+
+model User {
+  userId      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  username    String   @unique
+  email       String   @unique
+  password    String?
+  description String?
+  rank        Int      @default(0)
+  candy       Int?     @default(100)
+  roleId      String   @db.ObjectId
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  role  Role?   @relation(fields: [roleId], references: [roleId])
+  Novel Novel[]
+}
+
+model Novel {
+  novelId     String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId String    @db.ObjectId
+  author   User      @relation(fields: [authorId], references: [userId], onDelete: Cascade)
+  Chapter  Chapter[]
+}
+
+model Chapter {
+  chapterId String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  novelId String @db.ObjectId
+  novel   Novel? @relation(fields: [novelId], references: [novelId], onDelete: Cascade)
+}

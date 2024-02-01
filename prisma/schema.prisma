@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["selectRelationCount"]
 }
 
@@ -37,6 +37,7 @@ model User {
 
 model Novel {
   novelId     Int      @id @default(autoincrement())
+  slug        String
   thumbnail   String?
   title       String
   description String?
@@ -83,12 +84,15 @@ model Tag {
 // ------------
 
 model Chapter {
-  chapterId Int      @id @default(autoincrement())
-  title     String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // chapterId     Int      @id @default(autoincrement())
+  chapterNumber Int
+  title         String
+  content       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   novelId Int
   novel   Novel @relation(fields: [novelId], references: [novelId], onDelete: Cascade)
+
+  @@id([chapterNumber, novelId])
 }

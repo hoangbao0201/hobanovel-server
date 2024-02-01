@@ -38,6 +38,10 @@ export class NovelService {
         take: +take,
         where: where,
         select: {
+          novelId: true,
+          thumbnail: true,
+          createdAt: true,
+          updatedAt: true,
           title: true,
           author: {
             select: {

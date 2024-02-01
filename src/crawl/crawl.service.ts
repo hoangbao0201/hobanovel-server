@@ -1,10 +1,11 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { Injectable } from '@nestjs/common';
-import { CrawlNovelDTO } from './dto/crawlNovel.dto';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { textToSlug } from '../utils/textToSlug';
+import { CrawlNovelDTO } from './dto/crawlNovel.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 const userAgents = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
@@ -79,6 +80,7 @@ export class CrawlService {
       const novelRes = await this.prismaService.novel.create({
         data: {
           title: title,
+          slug: textToSlug(title),
           scrapedUrl: novelUrl,
           thumbnail: dataThumbnail?.image.secure_url,
           description: description,
@@ -170,6 +172,7 @@ export class CrawlService {
         // Create Chapter Novel
         const chapterRes = await this.prismaService.chapter.create({
           data: {
+            chapterNumber: i,
             title: dataChapter?.chapter.title,
             content: dataChapter?.chapter.content,
             novelId: novelId,

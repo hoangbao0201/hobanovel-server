@@ -3,21 +3,22 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["selectRelationCount"]
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Role {
-  roleId   String @id @default(auto()) @map("_id") @db.ObjectId
+  roleId   Int    @id @default(autoincrement())
   roleName String @unique
   users    User[]
 }
 
 model User {
-  userId      String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      Int      @id @default(autoincrement())
   name        String
   username    String   @unique
   email       String   @unique
@@ -25,36 +26,69 @@ model User {
   description String?
   rank        Int      @default(0)
   candy       Int?     @default(100)
-  roleId      String   @db.ObjectId
   avatarUrl   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  role  Role?   @relation(fields: [roleId], references: [roleId])
-  Novel Novel[]
+  roleId Int
+  role   Role    @relation(fields: [roleId], references: [roleId])
+  Novel  Novel[]
 }
 
 model Novel {
-  novelId     String   @id @default(auto()) @map("_id") @db.ObjectId
+  novelId     Int      @id @default(autoincrement())
   thumbnail   String?
   title       String
-  description String
+  description String?
   scrapedUrl  String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  authorId String    @db.ObjectId
-  author   User      @relation(fields: [authorId], references: [userId], onDelete: Cascade)
-  Chapter  Chapter[]
+  postedById Int
+  postedBy   User    @relation(fields: [postedById], references: [userId], onDelete: Cascade)
+  authorId   Int?
+  author     Author? @relation(fields: [authorId], references: [authorId], onDelete: Cascade)
+
+  genre Int
+
+  tags     NovelTag[]
+  chapters Chapter[]
 }
 
+// ------------
+model Author {
+  authorId Int     @id @default(autoincrement())
+  name     String  @unique
+  novels   Novel[]
+}
+
+// ------------
+model NovelTag {
+  novelId Int
+  tagId   Int
+
+  novel Novel @relation(fields: [novelId], references: [novelId], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+
+  @@id([novelId, tagId])
+}
+
+model Tag {
+  tagId     Int        @id @default(autoincrement())
+  index     Int        @unique
+  name      String     @unique
+  novelTags NovelTag[]
+}
+
+// ------------
+
 model Chapter {
-  chapterId String   @id @default(auto()) @map("_id") @db.ObjectId
+  chapterId Int      @id @default(autoincrement())
   title     String
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  novelId String @db.ObjectId
-  novel   Novel  @relation(fields: [novelId], references: [novelId], onDelete: Cascade)
+  novelId Int
+  novel   Novel @relation(fields: [novelId], references: [novelId], onDelete: Cascade)
 }

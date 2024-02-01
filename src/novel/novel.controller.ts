@@ -8,12 +8,12 @@ export class NovelController {
   @Get()
   findAll(
     @Query('q') q: string,
-    @Query('byu') byu: string,
+    @Query('bya') bya: string,
     @Query('take') take: number,
     @Query('skip') skip: number,
     @Query('sort') sort: 'desc' | 'asc',
   ) {
-    return this.novelService.findAll({ q, byu, take: take, skip: skip, sort });
+    return this.novelService.findAll({ q, bya, take: take, skip: skip, sort });
   }
 
 }

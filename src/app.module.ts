@@ -9,6 +9,7 @@ import { NovelModule } from './novel/novel.module';
 import { CrawlModule } from './crawl/crawl.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ChapterModule } from './chapter/chapter.module';
+import { TagNovelModule } from './tag-novel/tag-novel.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ChapterModule } from './chapter/chapter.module';
     CrawlModule,
     CloudinaryModule,
     ChapterModule,
+    TagNovelModule,
   ],
   controllers: [AppController],
   providers: [AppService],

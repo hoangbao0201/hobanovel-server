@@ -9,12 +9,12 @@ export class NovelService {
 
   async findAll(options: {
     q?: string;
-    byu?: string;
+    bya?: string;
     take?: number;
     skip?: number;
     sort?: 'desc' | 'asc';
   }) {
-    const { q = '', byu = '', take = 10, skip = 0, sort = 'desc' } = options;
+    const { q = '', bya = '', take = 10, skip = 0, sort = 'desc' } = options;
     try {
       let where: Prisma.NovelWhereInput = {};
       if (q != '') {
@@ -25,11 +25,11 @@ export class NovelService {
           },
         };
       }
-      if (byu != '') {
+      if (bya != '') {
         where = {
           ...where,
           author: {
-            username: byu,
+            name: bya
           },
         };
       }
@@ -38,7 +38,26 @@ export class NovelService {
         take: +take,
         where: where,
         select: {
-          title: true
+          title: true,
+          author: {
+            select: {
+              name: true
+            }
+          },
+          genre: true,
+          postedBy: {
+            select: {
+              name: true,
+              userId: true,
+              username: true
+            }
+          },
+          description: true,
+          _count: {
+            select: {
+              chapters: true
+            }
+          }
         }
       });
 

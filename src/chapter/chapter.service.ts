@@ -12,7 +12,7 @@ export class ChapterService {
     try {
       const chaptersRes = await this.prismaService.chapter.findMany({
         where: {
-          novelId: novelId
+          novelId: +novelId
         },
         select: {
           title: true,

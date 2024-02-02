@@ -31,15 +31,21 @@ export class CrawlService {
   // Create Novel
   async createNovel(userId: number, { take, novelUrl }: CrawlNovelDTO) {
     try {
-      // Check Existence Novel.
-      const checkNovel = await this.prismaService.novel.findUnique({
-        where: {
-          scrapedUrl: novelUrl,
-        },
-        select: {
-          novelId: true,
-        },
-      });
+      
+      const [checkNovel, dataNovel] = await Promise.all([
+        // Check Existence Novel.
+        this.prismaService.novel.findUnique({
+          where: {
+            scrapedUrl: novelUrl,
+          },
+          select: {
+            novelId: true,
+          },
+        }),
+        // Crawl Data Novel
+        this.crawlNovel(novelUrl)
+      ]);
+      
       if (checkNovel && checkNovel?.novelId) {
         // Get Count Chapter
         const countChapterNovel = await this.prismaService.chapter.count({
@@ -59,22 +65,16 @@ export class CrawlService {
         return {
           success: true,
           message: 'novel exist',
-          countChapterNovel: countChapterNovel,
-          novelUrl: novelUrl,
-          novelId: checkNovel?.novelId,
-          start: countChapterNovel,
-          take: +take,
           chapterRes: chapterRes
         };
       }
 
-      // Crawl Data Novel
-      const dataNovel = await this.crawlNovel(novelUrl);
       if (!dataNovel?.success) {
-        throw new Error();
+        throw new Error("Error crawling novel");
       }
-      const { author, title, genre, tags, thumbnail, description } = dataNovel?.novel;
 
+      const { author, title, genre, tags, thumbnail, description } = dataNovel?.novel;
+      
       // Upload Thumbnail Novel
       const dataThumbnail = await this.cloudinaryService.uploadImageNovelByUrl({
         url: thumbnail,

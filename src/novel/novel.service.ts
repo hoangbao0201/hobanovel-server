@@ -76,4 +76,63 @@ export class NovelService {
       }
     }
   }
+
+  async findOne(slug: string) {
+    const novelId = slug.substring(slug.lastIndexOf('-') + 1);
+    try {
+      const novelRes = await this.prismaService.novel.findUnique({
+        where: {
+          novelId: +novelId
+        },
+        select: {
+          novelId: true,
+          title: true,
+          slug: true,
+          genre: true,
+          thumbnail: true,
+          description: true,
+          scrapedUrl: true,
+          tags: {
+            select: {
+              tag: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          },
+          author: {
+            select: {
+              authorId: true,
+              name: true
+            }
+          },
+          postedBy: {
+            select: {
+              name: true,
+              userId: true,
+              username: true
+            }
+          },
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              chapters: true
+            }
+          }
+        }
+      });
+
+      return {
+        success: true,
+        novel: novelRes,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error
+      }
+    }
+  }
 }

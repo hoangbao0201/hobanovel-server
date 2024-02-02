@@ -16,4 +16,10 @@ export class NovelController {
     return this.novelService.findAll({ q, bya, take: take, skip: skip, sort });
   }
 
+  @Get(":slug")
+  findOne(
+    @Param('slug') slug: string
+  ) {
+    return this.novelService.findOne(slug);
+  }
 }

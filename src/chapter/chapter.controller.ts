@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Request, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { ChapterService } from './chapter.service';
+import { JwtGuard } from '../auth/guard/jwt.guard';
 
 @Controller('/api/chapters')
 export class ChapterController {
@@ -20,4 +21,11 @@ export class ChapterController {
     return this.chapterService.findAll({ slug });
   }
 
+  @UseGuards(JwtGuard)
+  @Patch()
+  fixAll(
+    @Request() req
+  ) {
+    return this.chapterService.updateAll();
+  }
 }

@@ -19,6 +19,7 @@ const userAgents = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
   'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko',
 ];
+const htmlAdvertisement = "<div class=\"pt-3 text-center\" style=\"margin-right: -1rem;\"><div class=\"mb-1 fz-13\"><small class=\"text-muted\"><small>— QUẢNG CÁO —</small></small></div><div class=\"my-1\"></div></div>"
 
 @Injectable()
 export class CrawlService {
@@ -40,13 +41,15 @@ export class CrawlService {
         },
       });
       if (checkNovel && checkNovel?.novelId) {
+        // Get Count Chapter
         const countChapterNovel = await this.prismaService.chapter.count({
           where: {
             novelId: checkNovel?.novelId,
           },
         });
 
-        await this.createMultipleChaptersNovel({
+        // Create Multiple Chapter
+        const chapterRes =  await this.createMultipleChaptersNovel({
           novelId: checkNovel?.novelId,
           novelUrl: novelUrl,
           start: countChapterNovel,
@@ -57,7 +60,11 @@ export class CrawlService {
           success: true,
           message: 'novel exist',
           countChapterNovel: countChapterNovel,
+          novelUrl: novelUrl,
+          novelId: checkNovel?.novelId,
+          start: countChapterNovel,
           take: +take,
+          chapterRes: chapterRes
         };
       }
 
@@ -89,7 +96,7 @@ export class CrawlService {
         },
       });
 
-      // Update Novel
+      // Update Tag And Author Novel
       let dataUpdateNovel: Prisma.NovelUpdateInput = {};
       if(author) {
         dataUpdateNovel = {
@@ -124,7 +131,7 @@ export class CrawlService {
         }
       })
 
-      // Create Multiple Chapter
+      // // Create Multiple Chapter
       await this.createMultipleChaptersNovel({
         novelId: novelRes?.novelId,
         novelUrl: novelUrl,
@@ -156,28 +163,34 @@ export class CrawlService {
     start: number;
     take: number;
   }) {
+    const n = start + take;
+    let i = start + 1;
+    let listChapter = [];
     try {
-      const n = start + take;
-      let i = start + 1;
-      let listChapter = [];
       while (i <= n) {
         const dataChapter = await this.crawlChapter(novelUrl + '/chuong-' + i);
         if (!dataChapter?.success) {
-          throw new Error();
+          throw new Error(`Error crawling chapter ${i}: ${dataChapter?.error}`);
         }
         if (!dataChapter?.isNext) {
           break;
         }
-
-        // Create Chapter Novel
-        const chapterRes = await this.prismaService.chapter.create({
-          data: {
-            chapterNumber: i,
-            title: dataChapter?.chapter.title,
-            content: dataChapter?.chapter.content,
-            novelId: novelId,
-          },
-        });
+        listChapter.push({
+          chapterNumber: i,
+          title: dataChapter?.chapter.title,
+          content: dataChapter?.chapter.content,
+          novelId: novelId,
+        })
+        if(listChapter?.length >= 10 || n === i) {
+          // Create Chapter Novel
+          const chapterRes = await this.prismaService.chapter.createMany({
+            data: listChapter?.map((chapter) => chapter)
+          });
+          if(!chapterRes) {
+            throw new Error(`Error creating chapters`);
+          }
+          listChapter = [];
+        }
         i++;
       }
 
@@ -185,9 +198,25 @@ export class CrawlService {
         success: true,
       };
     } catch (error) {
+      if(listChapter?.length > 0) {
+        try {
+          const chapterRes  = await this.prismaService.chapter.createMany({
+            data: listChapter?.map((chapter) => chapter)
+          });
+          if (!chapterRes) {
+            throw new Error("Error creating remaining chapters");
+          }
+        } catch (remainingChaptersError) {
+          return {
+            success: false,
+            error: `Error creating remaining chapters: ${remainingChaptersError?.message}`,
+          };
+        }
+        listChapter = [];
+      }
       return {
         success: false,
-        error: error,
+        error: error.message || "Unknown error",
       };
     }
   }
@@ -258,7 +287,7 @@ export class CrawlService {
       });
       const $ = cheerio.load(response.data);
       const title = $(`div.nh-read__title`)?.text().trim().split(':')[1].trim();
-      const content = $(`div#article.c-c`)?.html().trim();
+      const content = $(`div#article.c-c`)?.html().trim().replace(new RegExp(`${htmlAdvertisement}`, 'g'), "");
       const isNext = $('a.nh-read__action')?.last().attr('href') ? false : true;
 
       return {
@@ -272,7 +301,7 @@ export class CrawlService {
     } catch (error) {
       return {
         success: false,
-        message: error,
+        error: error,
       };
     }
   }

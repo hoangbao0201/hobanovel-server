@@ -26,6 +26,7 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.2.0",
     "@prisma/client": "^5.9.0",
     "argon2": "^0.31.2",
     "axios": "^1.6.7",

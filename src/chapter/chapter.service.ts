@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 const htmlAdvertisement  = "<div class=\"pt-3 text-center\" style=\"margin-right: -1rem;\"><div class=\"mb-1 fz-13\"><small class=\"text-muted\"><small>— QUẢNG CÁO —</small></small></div><div class=\"my-1\"></div></div>"
-const htmlAdvertisement1 = "<div class=\"pt-3 text-center\" style=\"margin-right: -1rem;\"><div class=\"mb-1 fz-13\"><small class=\"text-muted\"><small>— QUẢNG CÁO —</small></small></div><div class=\"my-1\"></div></div>"
 
 @Injectable()
 export class ChapterService {
@@ -29,7 +28,7 @@ export class ChapterService {
           createdAt: true,
           updatedAt: true,
         }
-      })
+      });
 
       return {
         success: true,
@@ -95,7 +94,7 @@ export class ChapterService {
             }
           },
           data: {
-            content: chaptersRes[i].content.replace(new RegExp(`${htmlAdvertisement}`, 'g'), '')
+            // content: chaptersRes[i].content.replace("<br>", "/n").replace(new RegExp(`${htmlAdvertisement}`, 'g'), '')
           }
         });
         i++;
@@ -112,23 +111,4 @@ export class ChapterService {
     }
   }
   
-
-  // async updateAllHanle(listChapter) {
-  //   try {
-  //     let i = 1;
-  //     while(i<=listChapter) {
-  //       const chaptersUpdate = await this.prismaService.chapter.update(listChapter[i]);
-  //     }
-
-  //     return {
-  //       success: true,
-  //       // chaptersUpdate: chaptersUpdate
-  //     }
-  //   } catch (error) {
-  //     return {
-  //       success: false,
-  //       error: error
-  //     }
-  //   }
-  // }
 }

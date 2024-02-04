@@ -26,6 +26,8 @@ import { TagNovelModule } from './tag-novel/tag-novel.module';
     TagNovelModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+  ],
 })
 export class AppModule {}

@@ -1,17 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, UseInterceptors, Inject } from '@nestjs/common';
 import { NovelService } from './novel.service';
 import { ApiQuery } from '@nestjs/swagger';
+import { JwtGuard } from '../auth/guard/jwt.guard';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('/api/novels')
 export class NovelController {
-  constructor(private readonly novelService: NovelService) {}
-
+  constructor(
+    private readonly novelService: NovelService,
+  ) {}
+  
   @Get()
-  @ApiQuery({ name: 'q', required: false, type: String, description: 'Query string for search' })
-  @ApiQuery({ name: 'bya', required: false, type: String, description: 'Another query parameter' })
-  @ApiQuery({ name: 'take', required: false, type: Number, description: 'Number of items to take' })
-  @ApiQuery({ name: 'skip', required: false, type: Number, description: 'Number of items to skip' })
-  @ApiQuery({ name: 'sort', required: false, enum: ['desc', 'asc'], description: 'Sort order' })
   findAll(
     @Query('q') q?: string,
     @Query('bya') bya?: string,
@@ -27,5 +26,13 @@ export class NovelController {
     @Param('slug') slug: string
   ) {
     return this.novelService.findOne(slug);
+  }
+
+  @UseGuards(JwtGuard)
+  @Patch()
+  fixAll(
+    @Request() req
+  ) {
+    return this.novelService.updateAll();
   }
 }

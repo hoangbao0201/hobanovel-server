@@ -1,12 +1,17 @@
 import { Prisma } from '@prisma/client';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from "cache-manager"
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class NovelService {
-  constructor(private prismaService: PrismaService) {}
-
+  constructor(
+    private prismaService: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {}
+ 
   async findAll(options: {
     q?: string;
     bya?: string;
@@ -14,7 +19,18 @@ export class NovelService {
     skip?: number;
     sort?: 'desc' | 'asc';
   }) {
+    const cacheValue = await this.cacheManager.get("/api/novels");
+    if(cacheValue) {
+      // console.log('From Cache.');
+      return {
+        success: true,
+        cache: true,
+        novels: cacheValue
+      };
+    }
+
     const { q = '', bya = '', take = 10, skip = 0, sort = 'desc' } = options;
+    
     try {
       let where: Prisma.NovelWhereInput = {};
       if (q != '') {
@@ -65,6 +81,9 @@ export class NovelService {
         }
       });
 
+      await this.cacheManager.set("/api/novels", novelsRes, 60000*5);
+
+      // console.log('From Database.');
       return {
         success: true,
         novels: novelsRes,
@@ -128,6 +147,39 @@ export class NovelService {
         success: true,
         novel: novelRes,
       };
+    } catch (error) {
+      return {
+        success: false,
+        error: error
+      }
+    }
+  }
+
+  async updateAll() {
+    try {
+      const novelsRes = await this.prismaService.novel.findMany({
+        select: {
+          novelId: true,
+          description: true
+        }
+      });
+
+      let i = 0;
+      while(i<novelsRes?.length) {
+        const novelsUpdate = await this.prismaService.novel.update({
+          where: {
+            novelId: novelsRes[i].novelId
+          },
+          data: {
+            description: novelsRes[i].description.replace("\n\n", "\t").replace(/<[^>]*>/g, '')
+          }
+        });
+        i++;
+      }
+
+      return {
+        success: true,
+      }
     } catch (error) {
       return {
         success: false,

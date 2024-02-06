@@ -89,7 +89,7 @@ export class CrawlService {
           title: title,
           slug: textToSlug(title),
           scrapedUrl: novelUrl,
-          thumbnail: dataThumbnail?.image.secure_url,
+          thumbnail: dataThumbnail?.image.secure_url.replace("https://res.cloudinary.com/djtbntzq2/image/upload/", ""),
           description: description,
           postedById: userId,
           genre: genre,
@@ -264,7 +264,7 @@ export class CrawlService {
             'https://static.cdnno.com/poster/' +
             url.split('https://metruyencv.com/truyen/')[1] +
             '/default.jpg',
-          description: description,
+          description: description.replace("<br>", "\t").replace(/<[^>]*>/g, ''),
         },
       };
     } catch (error) {

@@ -52,6 +52,9 @@ export class NovelService {
       const novelsRes = await this.prismaService.novel.findMany({
         skip: +skip,
         take: +take,
+        orderBy: {
+          createdAt: sort
+        },
         where: where,
         select: {
           novelId: true,
@@ -160,7 +163,8 @@ export class NovelService {
       const novelsRes = await this.prismaService.novel.findMany({
         select: {
           novelId: true,
-          description: true
+          description: true,
+          thumbnail: true
         }
       });
 
@@ -171,7 +175,8 @@ export class NovelService {
             novelId: novelsRes[i].novelId
           },
           data: {
-            description: novelsRes[i].description.replace("\n\n", "\t").replace(/<[^>]*>/g, '')
+            description: novelsRes[i].description.replace("<br>", "\t").replace(/<[^>]*>/g, ''),
+            thumbnail: novelsRes[i].thumbnail.replace("https://res.cloudinary.com/djtbntzq2/image/upload/", "")
           }
         });
         i++;
